@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#07080f">
+<title>HIGH &amp; LOW</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Noto+Serif+JP:wght@400;600;900&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- 背景の装飾。アールデコの放射模様を敷いています -->
+<div class="deco-rays" aria-hidden="true"></div>
+<div class="deco-vignette" aria-hidden="true"></div>
+
+<div class="app">
+
+  <!-- ============================================
+       上段：店名・残高・2つのボタン
+       ============================================ -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">♠</span>
+      <span class="brand-name">HIGH &amp; LOW</span>
+    </div>
+    <div class="topbar-right">
+      <div class="purse">
+        <span class="purse-label">残高</span>
+        <strong class="purse-value" id="balance">0</strong>
+      </div>
+      <button class="icon-btn" id="btnStats" title="記録">記録</button>
+      <button class="icon-btn" id="btnHelp" title="遊び方">?</button>
+    </div>
+  </header>
+
+  <!-- ============================================
+       連勝の帯と、いまの倍率
+       ============================================ -->
+  <section class="chain-bar">
+    <div class="chain-rail" id="chainRail"></div>
+    <div class="chain-meter">
+      <div class="meter-mult" id="multValue">×1.00</div>
+      <div class="meter-pay" id="payValue">—</div>
+    </div>
+  </section>
+
+  <!-- ============================================
+       卓（山札と札）
+       ============================================ -->
+  <section class="stage">
+
+    <div class="spots">
+      <!-- 左：いま場に出ている札 -->
+      <div class="spot spot-current" id="spotCurrent"></div>
+
+      <!-- 右：山札。ここで次の札がめくれます -->
+      <div class="spot spot-next" id="spotNext">
+        <div class="deck-stack" id="deckStack"></div>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============================================
+       残っている札（数字ごとの残り枚数）
+       ============================================ -->
+  <section class="remain">
+    <div class="remain-head">
+      <span>残っている札 <b id="deckCount">52枚</b></span>
+      <span class="remain-legend">
+        <i class="lg lg-low"></i>ロー
+        <i class="lg lg-same"></i>同じ
+        <i class="lg lg-high"></i>ハイ
+      </span>
+    </div>
+    <div class="remain-grid" id="remainGrid"></div>
+  </section>
+
+  <!-- ============================================
+       賭ける操作
+       ============================================ -->
+  <footer class="dock">
+
+    <!-- ハイ・同じ・ロー -->
+    <div class="guesses">
+      <button class="guess guess-high" id="btnHigh">
+        <span class="g-arrow">▲</span>
+        <span class="g-name">ハイ</span>
+        <span class="g-mult" id="multHigh">—</span>
+        <span class="g-prob" id="probHigh">—</span>
+      </button>
+      <button class="guess guess-same" id="btnSame">
+        <span class="g-arrow">＝</span>
+        <span class="g-name">同じ</span>
+        <span class="g-mult" id="multSame">—</span>
+        <span class="g-prob" id="probSame">—</span>
+      </button>
+      <button class="guess guess-low" id="btnLow">
+        <span class="g-arrow">▼</span>
+        <span class="g-name">ロー</span>
+        <span class="g-mult" id="multLow">—</span>
+        <span class="g-prob" id="probLow">—</span>
+      </button>
+    </div>
+
+    <!-- 賭け金（勝負前だけ使えます） -->
+    <div class="stake-row" id="stakeRow">
+      <span class="stake-label">賭け金</span>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- 降りる（勝負中だけ使えます） -->
+    <button class="btn-cashout" id="btnCashout">
+      <span class="co-label">降 り る</span>
+      <span class="co-amount" id="cashoutAmount">—</span>
+    </button>
+
+  </footer>
+
+</div>
+
+<!-- 勝ち負けの大きな表示 -->
+<div class="verdict" id="verdict"></div>
+
+<!-- 金の粒（当たったときに舞います） -->
+<div class="sparks" id="sparks" aria-hidden="true"></div>
+
+<!-- ============================================
+     記録のシート
+     ============================================ -->
+<div class="sheet" id="sheetStats">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>記録</h2>
+      <button class="sheet-close" data-close="sheetStats">閉じる</button>
+    </div>
+
+    <dl class="kv" id="statsList"></dl>
+
+    <h3 class="sheet-sub">連勝の履歴</h3>
+    <div class="runs" id="runsList"></div>
+
+    <button class="btn-ghost" id="btnResetAll">残高と記録を最初に戻す</button>
+  </div>
+</div>
+
+<!-- ============================================
+     遊び方のシート
+     ============================================ -->
+<div class="sheet" id="sheetHelp">
+  <div class="sheet-inner">
+    <div class="sheet-head">
+      <h2>遊び方</h2>
+      <button class="sheet-close" data-close="sheetHelp">閉じる</button>
+    </div>
+
+    <ol class="steps">
+      <li><b>賭け金を選ぶ</b> … 下のチップをタップします。</li>
+      <li><b>次の札を当てる</b> … いまの札より上か、下か、同じか。</li>
+      <li><b>当たれば倍率が積み上がる</b> … そのまま続けてもいいし、</li>
+      <li><b>「降りる」で受け取る</b> … いつでも降りられます。外したらゼロです。</li>
+    </ol>
+
+    <h3 class="sheet-sub">決まりごと</h3>
+    <dl class="rules">
+      <dt>札の強さ</dt>
+      <dd>A がいちばん小さく、K がいちばん大きい。マークの強さはありません。</dd>
+
+      <dt>同じ数字が出たら</dt>
+      <dd>ハイもローも<b>負け</b>です。狙うなら「同じ」に賭けてください。配当は大きくなります。</dd>
+
+      <dt>倍率はどう決まるか</dt>
+      <dd>
+        山に残っている札を数えて、その場で計算しています。
+        たとえば残り51枚のうち24枚が上なら、当たる確率は 24÷51。
+        倍率はその逆数から 3% を引いた値です。
+        <b>札が減るほど倍率は動きます。</b>
+      </dd>
+
+      <dt>引いた札は戻りません</dt>
+      <dd>52枚を使い切る方式です。残りが少なくなると自動で新しいひと組に替わります。何が残っているかは画面の「残っている札」で確認できます。</dd>
+
+      <dt>胴元の取り分</dt>
+      <dd>3%です。どこに賭けても同じなので、「同じ」を狙っても不利にはなりません。</dd>
+    </dl>
+
+    <h3 class="sheet-sub">コツ</h3>
+    <p class="note">
+      倍率の低い側（＝当たりやすい側）を選び続けると、長く続けられます。
+      2倍前後を5回続けると約37倍。当てる回数を増やすより、
+      <b>どこで降りるか</b>のほうが結果を左右します。
+    </p>
+  </div>
+</div>
+
+<script src="rules.js"></script>
+<script src="ui.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>
